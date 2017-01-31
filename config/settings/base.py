@@ -51,6 +51,7 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'klasstool.users',
     'klasstool.website',
+    'klasstool.courses',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -155,3 +156,6 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'klasstool', 'static')
 STATIC_URL = '/static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'klasstool', 'media')
+MEDIA_URL = '/media/'
