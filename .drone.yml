@@ -1,0 +1,26 @@
+build:
+  image: python:3.4.3
+  environment:
+    - DJANGO_SETTINGS_MODULE=config.settings.test
+    - SECRET_KEY=secret
+    - DB_HOST=127.0.0.1
+    - DB_NAME=postgres
+    - DB_USER=postgres
+    - DB_PASSWORD=postgres
+    - DB_PORT=5432
+    - DOMAIN=test
+  commands:
+    - pip install -r requirements/test.txt
+    - flake8 .
+    - python manage.py test
+compose:
+  database:
+    image: postgres:9.3
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+cache:
+  mount:
+    - node_modules
+    - .git

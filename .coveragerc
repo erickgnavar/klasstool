@@ -1,0 +1,4 @@
+[run]
+include = klasstool/*
+omit = *migrations*, */tests/*, *apps.py, */__init__.py
+source = .
