@@ -15,6 +15,10 @@ class HomeViewTestCase(TestCase):
         self.assertEqual(url.func.__name__, self.view.__name__)
 
     @tag('html_render')
+    def test_render_sucessful(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+
     def test_load_sucessful(self):
         request = self.factory.get('/')
         response = self.view(request)
