@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = (
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.twitter',
+    'channels',
 )
 
 LOCAL_APPS = (
@@ -149,6 +150,15 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+# channels
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'ROUTING': 'config.routing.channel_routing',
+    },
+}
 
 
 # Static files (CSS, JavaScript, Images)
