@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = (
     'allauth.socialaccount',
     'allauth.socialaccount.providers.twitter',
     'channels',
+    'rest_framework',
 )
 
 LOCAL_APPS = (
@@ -54,6 +55,7 @@ LOCAL_APPS = (
     'klasstool.website',
     'klasstool.courses',
     'klasstool.polls.apps.PollsConfig',
+    'klasstool.api_v1',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

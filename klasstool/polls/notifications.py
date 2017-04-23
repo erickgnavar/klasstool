@@ -2,27 +2,22 @@ import json
 
 from channels import Group
 
-# TODO: Add resource urls
-
 
 def poll_started(poll):
-    Group('session-{}'.format(poll.session.id)).send({
-        'text': json.dumps({
-            'type': 'POLL_STARTED',
-            'resource': ''
-        })
-    })
+    _send_poll(poll)
 
 
 def poll_finished(poll):
-    Group('session-{}'.format(poll.session.id)).send({
-        'text': json.dumps({
-            'type': 'POLL_FINISHED',
-            'resource': ''
-        })
-    })
+    _send_poll(poll)
 
 
 def poll_updated(poll):
-    # TODO: call to Group
-    pass
+    _send_poll(poll)
+
+
+def _send_poll(poll):
+    from klasstool.api_v1.serializers import PollSerializer
+    text = json.dumps(PollSerializer(poll).data)
+    Group('session-{}'.format(poll.session.id)).send({
+        'text': text
+    })
