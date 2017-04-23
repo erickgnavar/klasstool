@@ -8,6 +8,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/session.css' %}">
   </head>
   <body>
     <div class="container-fluid">
@@ -16,13 +17,22 @@
           <h1 class="text-center">{{ session.name }}</h1>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-6" id="elmapp"></div>
+      </div>
     </div>
 
     <!-- jQuery first, then Tether, then Bootstrap JS. -->
     <script src="//code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
     <script src="https://use.fontawesome.com/4476d6d797.js"></script>
-    <script src="{% static 'vendor/js/reconnecting-websocket.min.js' %}"></script>
-    <script src="{% static 'js/session.js' %}"></script>
+    <script src="{% static 'js/elm.js' %}"></script>
+    <script>
+      var scheme = window.location.protocol == 'https:' ? 'wss' : 'ws';
+      var app = Elm.Session.embed(document.getElementById('elmapp'), {
+        websocket: scheme + '://' + window.location.host + window.location.pathname,
+        sessionID: '{{ session.id }}'
+      });
+    </script>
   </body>
 </html>

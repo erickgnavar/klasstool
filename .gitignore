@@ -266,3 +266,5 @@ tags
 # project
 .envrc
 klasstool/static/admin
+elm-stuff
+elm/elm.js
