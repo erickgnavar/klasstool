@@ -13,5 +13,5 @@ class CourseAdmin(admin.ModelAdmin):
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'date', 'is_active', 'uuid')
+    list_display = ('id', 'name', 'date', 'is_active')
     list_filter = ('course',)

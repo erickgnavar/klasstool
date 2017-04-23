@@ -28,10 +28,10 @@ class Course(TimeStampedModel):
 
 class Session(TimeStampedModel):
 
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(_('Name'), max_length=50)
     date = models.DateField(_('Date'))
     course = models.ForeignKey('Course')
-    uuid = models.UUIDField(default=uuid4, editable=False)
     qrcode = models.ImageField(upload_to='sessions/qrcodes/%Y/%m/%d/', null=True, blank=True)
     is_active = models.BooleanField(_('Is active?'), default=False)
 
@@ -58,6 +58,6 @@ class Session(TimeStampedModel):
         im = qrcode.make_image()
         buffer = BytesIO()
         im.save(buffer, im.kind)
-        tmp = InMemoryUploadedFile(buffer, None, str(self.uuid), 'image/png', buffer.tell(), None)
+        tmp = InMemoryUploadedFile(buffer, None, str(self.id), 'image/png', buffer.tell(), None)
         self.qrcode = tmp
         self.save()

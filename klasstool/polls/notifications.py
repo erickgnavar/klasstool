@@ -6,7 +6,7 @@ from channels import Group
 
 
 def poll_started(poll):
-    Group('session-{}'.format(poll.session.uuid)).send({
+    Group('session-{}'.format(poll.session.id)).send({
         'text': json.dumps({
             'type': 'POLL_STARTED',
             'resource': ''
@@ -15,7 +15,7 @@ def poll_started(poll):
 
 
 def poll_finished(poll):
-    Group('session-{}'.format(poll.session.uuid)).send({
+    Group('session-{}'.format(poll.session.id)).send({
         'text': json.dumps({
             'type': 'POLL_FINISHED',
             'resource': ''

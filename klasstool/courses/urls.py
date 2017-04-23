@@ -4,5 +4,5 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^sessions/(?P<session_uuid>[\w-]+)/$', views.SessionPublicView.as_view(), name='session_public')
+    url(r'^sessions/(?P<session_id>[\w-]+)/$', views.SessionPublicView.as_view(), name='session-public')
 ]
