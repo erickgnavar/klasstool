@@ -21,3 +21,8 @@ def poll_finished(poll):
             'resource': ''
         })
     })
+
+
+def poll_updated(poll):
+    # TODO: call to Group
+    pass

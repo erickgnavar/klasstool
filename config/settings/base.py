@@ -53,7 +53,7 @@ LOCAL_APPS = (
     'klasstool.users',
     'klasstool.website',
     'klasstool.courses',
-    'klasstool.polls',
+    'klasstool.polls.apps.PollsConfig',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

@@ -1,6 +1,3 @@
-from collections import defaultdict
-
-from django.contrib.postgres.fields.jsonb import JSONField
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -17,8 +14,6 @@ class Poll(TimeStampedModel):
     is_active = models.BooleanField(_('Is active?'), default=False)
     start = models.DateTimeField(_('Start'), null=True, blank=True)
     end = models.DateTimeField(_('End'), null=True, blank=True)
-
-    result = JSONField(_('Result'), null=True, blank=True)
 
     class Meta:
         verbose_name = _('Poll')
@@ -37,22 +32,15 @@ class Poll(TimeStampedModel):
     def finish(self):
         self.end = timezone.now()
         self.is_active = False
-        self._process_responses()
         self.save()
         notifications.poll_finished(self)
-
-    def _process_responses(self):
-        res = defaultdict(int)
-        for response in self.responses.all().select_related('choice'):
-            res[response.choice.value] += 1
-        self.result = res
 
 
 class Choice(TimeStampedModel):
 
-    value = models.CharField(_('Value'), max_length=100)
-
     poll = models.ForeignKey('Poll')
+
+    value = models.CharField(_('Value'), max_length=100)
 
     class Meta:
         verbose_name = _('Choice')
