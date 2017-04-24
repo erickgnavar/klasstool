@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Json.Decode.Pipeline as Pipeline
 import WebSocket
 
@@ -41,6 +42,19 @@ type alias PollResult =
 type alias Choice =
     { id : Int
     , value : String
+    }
+
+
+type alias PollResponse =
+    { id : Int }
+
+
+
+--TODO: find better names
+
+
+type alias PollResponseResponse =
+    { data : PollResponse
     }
 
 
@@ -108,6 +122,7 @@ initModel =
 type Msg
     = Select Poll Choice
     | Vote Poll
+    | PostResponse (Result Http.Error PollResponseResponse)
     | FetchPolls (Result Http.Error PollsResponse)
     | NewMessage String
 
@@ -120,7 +135,31 @@ update msg model =
                 ( selectChoice model poll (Just choice), Cmd.none )
 
         Vote poll ->
-            --TODO: make a request to save vote
+            let
+                url =
+                    "/api/v1/sessions/" ++ model.sessionID ++ "/responses/"
+
+                body =
+                    case poll.selectedChoice of
+                        Just choice ->
+                            Http.jsonBody <|
+                                Encode.object
+                                    [ ( "poll", Encode.int poll.id )
+                                    , ( "choice", Encode.int choice.id )
+                                    ]
+
+                        Nothing ->
+                            Http.emptyBody
+
+                request =
+                    Http.post url body pollResponseResponseDecoder
+            in
+                ( model, Http.send PostResponse request )
+
+        PostResponse (Ok response) ->
+            ( model, Cmd.none )
+
+        PostResponse (Err err) ->
             ( model, Cmd.none )
 
         FetchPolls (Ok response) ->
@@ -219,6 +258,16 @@ resultView result =
         ]
 
 
+disableButtonWithNoChoice : Maybe Choice -> Bool
+disableButtonWithNoChoice selectedChoice =
+    case selectedChoice of
+        Just choice ->
+            False
+
+        Nothing ->
+            True
+
+
 activePollView : Poll -> Html Msg
 activePollView poll =
     div []
@@ -228,6 +277,7 @@ activePollView poll =
         , button
             [ onClick (Vote poll)
             , class "btn btn-primary"
+            , disabled (disableButtonWithNoChoice poll.selectedChoice)
             ]
             [ text "Vote" ]
         ]
@@ -290,6 +340,12 @@ pollsResponseDecoder =
         |> Pipeline.required "data" (Decode.list pollDecoder)
 
 
+pollResponseResponseDecoder : Decode.Decoder PollResponseResponse
+pollResponseResponseDecoder =
+    Pipeline.decode PollResponseResponse
+        |> Pipeline.required "data" pollResponseDecoder
+
+
 pollDecoder : Decode.Decoder Poll
 pollDecoder =
     Pipeline.decode Poll
@@ -306,6 +362,12 @@ choiceDecoder =
     Pipeline.decode Choice
         |> Pipeline.required "id" Decode.int
         |> Pipeline.required "value" Decode.string
+
+
+pollResponseDecoder : Decode.Decoder PollResponse
+pollResponseDecoder =
+    Pipeline.decode PollResponse
+        |> Pipeline.required "id" Decode.int
 
 
 pollResultDecoder : Decode.Decoder PollResult
