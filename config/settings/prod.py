@@ -10,6 +10,16 @@ INSTALLED_APPS += (  # noqa
     'raven.contrib.django.raven_compat',
 )
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('localhost', 6379)],
+        },
+        'ROUTING': 'config.routing.channel_routing',
+    },
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
