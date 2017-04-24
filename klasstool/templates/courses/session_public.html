@@ -1,4 +1,4 @@
-{% load i18n staticfiles %}
+{% load i18n static staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,7 +18,12 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6" id="elmapp"></div>
+        <div class="col-md-9" id="elmapp"></div>
+        <div class="col-md-3">
+          {% if session.qrcode.name %}
+          <img alt="qr" src="{% get_media_prefix %}{{ session.qrcode.name }}" width="300px"/>
+          {% endif %}
+        </div>
       </div>
     </div>
 
