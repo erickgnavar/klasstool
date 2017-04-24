@@ -1,12 +1,10 @@
-import json
-
 from django.http import JsonResponse
-from channels import Group
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 
 from . import serializers
 from klasstool.courses.models import Session
+from klasstool.polls import notifications
 from klasstool.polls.models import Poll
 
 
@@ -34,10 +32,7 @@ class PollResponseCreateView(APIView):
         serializer = serializers.ResponseSerializer(data=request.data)
         if serializer.is_valid():
             response = serializer.save()
-            text = json.dumps(serializers.PollSerializer(response.poll).data)
-            Group('session-{}'.format(response.poll.session.id)).send({
-                'text': text
-            })
+            notifications.poll_updated(response.poll)
             return JsonResponse({
                 'data': {
                     'id': response.id
