@@ -1,13 +1,12 @@
 module Session exposing (..)
 
-import Debug
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode
-import Json.Encode as Encode
 import Json.Decode.Pipeline as Pipeline
+import Json.Encode as Encode
 import WebSocket
 
 
@@ -31,6 +30,24 @@ type alias Flags =
     }
 
 
+type alias Model =
+    { polls : List Poll
+    , tmp : Maybe Poll
+    , sessionID : String
+    , websocket : String
+    }
+
+
+type alias Poll =
+    { id : Int
+    , title : String
+    , finished : Bool
+    , choices : List PollChoice
+    , results : List PollResult
+    , selectedChoice : Maybe PollChoice
+    }
+
+
 type alias PollResult =
     { value : String
     , votes : Int
@@ -39,7 +56,7 @@ type alias PollResult =
     }
 
 
-type alias Choice =
+type alias PollChoice =
     { id : Int
     , value : String
     }
@@ -50,34 +67,16 @@ type alias PollResponse =
 
 
 
---TODO: find better names
+-- HTTP TYPES
 
 
-type alias PollResponseResponse =
+type alias HttpPollResponse =
     { data : PollResponse
     }
 
 
-type alias Poll =
-    { id : Int
-    , title : String
-    , finished : Bool
-    , choices : List Choice
-    , results : List PollResult
-    , selectedChoice : Maybe Choice
-    }
-
-
-type alias PollsResponse =
+type alias HttpPollList =
     { data : List Poll
-    }
-
-
-type alias Model =
-    { polls : List Poll
-    , tmp : Maybe Poll
-    , sessionID : String
-    , websocket : String
     }
 
 
@@ -120,10 +119,10 @@ initModel =
 
 
 type Msg
-    = Select Poll Choice
+    = Select Poll PollChoice
     | Vote Poll
-    | PostResponse (Result Http.Error PollResponseResponse)
-    | FetchPolls (Result Http.Error PollsResponse)
+    | PostResponse (Result Http.Error HttpPollResponse)
+    | FetchPolls (Result Http.Error HttpPollList)
     | NewMessage String
 
 
@@ -131,8 +130,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Select poll choice ->
-            Debug.log ("Selected: " ++ choice.value)
-                ( selectChoice model poll (Just choice), Cmd.none )
+            ( selectPollChoice model poll (Just choice), Cmd.none )
 
         Vote poll ->
             let
@@ -152,7 +150,7 @@ update msg model =
                             Http.emptyBody
 
                 request =
-                    Http.post url body pollResponseResponseDecoder
+                    Http.post url body httpPollResponseDecoder
             in
                 ( model, Http.send PostResponse request )
 
@@ -197,8 +195,8 @@ insertOrReplacePoll model poll =
         { model | polls = poll :: model.polls }
 
 
-selectChoice : Model -> Poll -> Maybe Choice -> Model
-selectChoice model poll choice =
+selectPollChoice : Model -> Poll -> Maybe PollChoice -> Model
+selectPollChoice model poll choice =
     let
         newPolls =
             List.map
@@ -217,7 +215,7 @@ selectChoice model poll choice =
 -- VIEW
 
 
-choiceView : Poll -> Choice -> Html Msg
+choiceView : Poll -> PollChoice -> Html Msg
 choiceView poll choice =
     div []
         [ input
@@ -258,8 +256,8 @@ resultView result =
         ]
 
 
-disableButtonWithNoChoice : Maybe Choice -> Bool
-disableButtonWithNoChoice selectedChoice =
+disableButtonWithNoPollChoice : Maybe PollChoice -> Bool
+disableButtonWithNoPollChoice selectedChoice =
     case selectedChoice of
         Just choice ->
             False
@@ -277,7 +275,7 @@ activePollView poll =
         , button
             [ onClick (Vote poll)
             , class "btn btn-primary"
-            , disabled (disableButtonWithNoChoice poll.selectedChoice)
+            , disabled (disableButtonWithNoPollChoice poll.selectedChoice)
             ]
             [ text "Vote" ]
         ]
@@ -318,10 +316,6 @@ subscriptions model =
     WebSocket.listen model.websocket NewMessage
 
 
-
--- HTTP
-
-
 fetchSession : String -> Cmd Msg
 fetchSession sessionID =
     let
@@ -329,20 +323,24 @@ fetchSession sessionID =
             "/api/v1/sessions/" ++ sessionID ++ "/polls/"
 
         request =
-            Http.get url pollsResponseDecoder
+            Http.get url httpPollListDecoder
     in
         Http.send FetchPolls request
 
 
-pollsResponseDecoder : Decode.Decoder PollsResponse
-pollsResponseDecoder =
-    Pipeline.decode PollsResponse
+
+-- DECODERS
+
+
+httpPollListDecoder : Decode.Decoder HttpPollList
+httpPollListDecoder =
+    Pipeline.decode HttpPollList
         |> Pipeline.required "data" (Decode.list pollDecoder)
 
 
-pollResponseResponseDecoder : Decode.Decoder PollResponseResponse
-pollResponseResponseDecoder =
-    Pipeline.decode PollResponseResponse
+httpPollResponseDecoder : Decode.Decoder HttpPollResponse
+httpPollResponseDecoder =
+    Pipeline.decode HttpPollResponse
         |> Pipeline.required "data" pollResponseDecoder
 
 
@@ -352,14 +350,14 @@ pollDecoder =
         |> Pipeline.required "id" Decode.int
         |> Pipeline.required "title" Decode.string
         |> Pipeline.required "finished" Decode.bool
-        |> Pipeline.required "choices" (Decode.list choiceDecoder)
+        |> Pipeline.required "choices" (Decode.list pollChoiceDecoder)
         |> Pipeline.required "results" (Decode.list pollResultDecoder)
-        |> Pipeline.optional "selectedChoice" (Decode.maybe choiceDecoder) Nothing
+        |> Pipeline.optional "selectedChoice" (Decode.maybe pollChoiceDecoder) Nothing
 
 
-choiceDecoder : Decode.Decoder Choice
-choiceDecoder =
-    Pipeline.decode Choice
+pollChoiceDecoder : Decode.Decoder PollChoice
+pollChoiceDecoder =
+    Pipeline.decode PollChoice
         |> Pipeline.required "id" Decode.int
         |> Pipeline.required "value" Decode.string
 
